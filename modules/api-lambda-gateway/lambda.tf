@@ -1,3 +1,4 @@
+# Lambda Function
 resource "aws_lambda_function" "api_lambda" {
   function_name    = var.lambda_function_name
   runtime          = var.lambda_runtime
@@ -11,12 +12,11 @@ resource "aws_lambda_function" "api_lambda" {
   }
 }
 
-resource "null_resource" "zip_lambda" {
-  provisioner "local-exec" {
-    command = "zip -j ${path.module}/lambda_function.zip ${path.module}/lambda_function.py"
-  }
-
-  triggers = {
-    python_code = file("${path.module}/lambda_function.py")
-  }
+# Lambda Permission for API Gateway
+resource "aws_lambda_permission" "api_gateway_invoke" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.api_lambda.arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/*/*"
 }

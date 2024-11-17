@@ -8,7 +8,7 @@ resource "aws_api_gateway_rest_api" "rest_api" {
 resource "aws_api_gateway_resource" "api_resource" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   parent_id   = aws_api_gateway_rest_api.rest_api.root_resource_id
-  path_part   = "{proxy+}"
+  path_part   = "lambda"
 }
 
 # API Gateway Method (ANY HTTP method)
@@ -33,5 +33,15 @@ resource "aws_api_gateway_integration" "lambda_integration" {
 resource "aws_api_gateway_deployment" "deployment" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   depends_on  = [aws_api_gateway_integration.lambda_integration]
-  stage_name  = "default"
+}
+
+# API Gateway Stage
+resource "aws_api_gateway_stage" "stage" {
+  deployment_id = aws_api_gateway_deployment.deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.rest_api.id
+  stage_name    = "default"
+
+  variables = {
+    lambda_alias = "live"
+  }
 }
